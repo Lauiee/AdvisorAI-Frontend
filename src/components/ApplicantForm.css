@@ -1,5 +1,4 @@
 .applicant-form-page {
-  min-height: 100vh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -266,7 +265,6 @@
   .applicant-form-page {
     padding: 1.5rem;
     align-items: flex-start;
-    min-height: auto;
   }
 
   .applicant-form-container {
@@ -283,7 +281,6 @@
   .applicant-form-page {
     padding: 1.5rem 1rem;
     align-items: flex-start;
-    min-height: auto;
   }
 
   .form-header {
@@ -345,7 +342,6 @@
   .applicant-form-page {
     padding: 1rem;
     align-items: flex-start;
-    min-height: auto;
   }
 
   .applicant-form-container {
