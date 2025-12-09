@@ -26,8 +26,8 @@ function ApplicantForm() {
   const selectedSchool = location.state?.school || "기술경영전문대학원(MOT)";
 
   const [formData, setFormData] = useState({
-    name: "",
-    major: "",
+    name: "홍길동",
+    major: "기술경영(Technology Management)",
     interestKeyword: "",
     learningStyles: [],
   });
@@ -62,12 +62,7 @@ function ApplicantForm() {
   const validateForm = () => {
     const errors = [];
 
-    if (!formData.name.trim()) {
-      errors.push("이름");
-    }
-    if (!formData.major.trim()) {
-      errors.push("전공");
-    }
+    // 이름과 전공은 고정값이므로 검증 제외
     if (!formData.interestKeyword) {
       errors.push("관심 키워드");
     }
@@ -116,7 +111,7 @@ function ApplicantForm() {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // 결과 페이지로 이동 (목 데이터와 함께 전달)
-      navigate('/results', {
+      navigate("/results", {
         state: {
           formData: formData,
           school: selectedSchool,
@@ -168,6 +163,7 @@ function ApplicantForm() {
               placeholder="이름을 입력해주세요"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
+              disabled
             />
           </div>
 
@@ -180,6 +176,7 @@ function ApplicantForm() {
               placeholder="전공을 입력해주세요"
               value={formData.major}
               onChange={(e) => handleInputChange("major", e.target.value)}
+              disabled
             />
           </div>
 

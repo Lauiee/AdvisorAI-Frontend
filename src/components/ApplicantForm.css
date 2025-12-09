@@ -137,6 +137,13 @@
   box-shadow: 0 0 0 3px rgba(50, 195, 176, 0.1);
 }
 
+.text-input:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .text-input::placeholder {
   color: #9ca3af;
 }
