@@ -1,10 +1,11 @@
 .applicant-form-page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 2rem;
   background-color: #f5f6fa;
+  box-sizing: border-box;
 }
 
 .applicant-form-container {
@@ -13,6 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -258,16 +260,33 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 968px) {
   .applicant-form-page {
     padding: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .applicant-form-container {
+    gap: 1.25rem;
+  }
+
+  .form-card {
+    padding: 2rem 1.5rem;
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .applicant-form-page {
+    padding: 1.5rem 1rem;
+    align-items: flex-start;
   }
 
   .form-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 1rem 1.25rem;
+    padding: 1rem 0;
   }
 
   .header-red-bar {
@@ -289,12 +308,22 @@
   }
 
   .form-card {
-    padding: 2rem 1.5rem;
+    padding: 1.75rem 1.25rem;
     gap: 1.5rem;
+    border-radius: 16px;
   }
 
   .form-title {
     font-size: 1.3rem;
+  }
+
+  .field-label {
+    font-size: 0.95rem;
+  }
+
+  .text-input {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
   }
 
   .token-button {
@@ -311,14 +340,41 @@
 @media (max-width: 480px) {
   .applicant-form-page {
     padding: 1rem;
+    align-items: flex-start;
+  }
+
+  .applicant-form-container {
+    gap: 1rem;
+  }
+
+  .form-header {
+    padding: 0.75rem 0;
+    gap: 0.5rem;
+  }
+
+  .header-label,
+  .department-name,
+  .form-subtitle {
+    font-size: 1rem;
   }
 
   .form-card {
-    padding: 1.5rem 1.25rem;
+    padding: 1.5rem 1rem;
+    gap: 1.25rem;
+    border-radius: 12px;
   }
 
   .form-title {
     font-size: 1.2rem;
+  }
+
+  .field-label {
+    font-size: 0.9rem;
+  }
+
+  .text-input {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9rem;
   }
 
   .token-list {
@@ -330,14 +386,21 @@
     font-size: 0.85rem;
   }
 
+  .submit-button {
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
   .toast-notification {
     bottom: 1rem;
     right: 1rem;
+    left: 1rem;
+    max-width: calc(100% - 2rem);
   }
 
   .toast-content {
-    min-width: 250px;
-    max-width: 90%;
+    min-width: auto;
+    max-width: 100%;
     padding: 0.875rem 1.25rem;
   }
 

@@ -533,8 +533,19 @@
   font-family: inherit;
 }
 
-/* Responsive */
+/* Responsive Design */
 @media (max-width: 1200px) {
+  .chat-layout {
+    grid-template-columns: 260px 1fr 300px;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 968px) {
+  .chat-simulation-page {
+    padding: 1.5rem;
+  }
+
   .chat-layout {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -544,19 +555,28 @@
 
   .professor-info-card,
   .right-info-card {
+    position: static;
+    max-height: none;
     order: 2;
-    height: auto;
   }
 
   .chat-container {
     order: 1;
-    height: calc(100vh - 12rem);
+    min-height: 500px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .chat-simulation-page {
     padding: 1rem;
+  }
+
+  .page-title-section {
+    padding: 1rem 0;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
   }
 
   .chat-layout {
