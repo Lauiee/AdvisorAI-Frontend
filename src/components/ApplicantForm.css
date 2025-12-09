@@ -6,6 +6,8 @@
   padding: 2rem;
   background-color: #f5f6fa;
   box-sizing: border-box;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .applicant-form-container {
@@ -264,6 +266,7 @@
   .applicant-form-page {
     padding: 1.5rem;
     align-items: flex-start;
+    min-height: auto;
   }
 
   .applicant-form-container {
@@ -280,6 +283,7 @@
   .applicant-form-page {
     padding: 1.5rem 1rem;
     align-items: flex-start;
+    min-height: auto;
   }
 
   .form-header {
@@ -341,6 +345,7 @@
   .applicant-form-page {
     padding: 1rem;
     align-items: flex-start;
+    min-height: auto;
   }
 
   .applicant-form-container {
