@@ -1,0 +1,443 @@
+.results-page {
+  min-height: 100vh;
+  background-color: #f5f6fa;
+  padding: 2rem;
+}
+
+.results-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Header */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.results-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e2a3a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Main Content */
+.results-content {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Left Panel - Applicant Profile */
+.applicant-profile-panel {
+  background: linear-gradient(135deg, #1e2a3a 0%, #2a3a4a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.2);
+  position: sticky;
+  top: 2rem;
+}
+
+.profile-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.panel-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+  letter-spacing: -0.01em;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-item:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-item-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.profile-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  opacity: 0.7;
+  color: white;
+  min-width: 60px;
+}
+
+.profile-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.nav-button {
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: white;
+  color: #1e2a3a;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: center;
+}
+
+.nav-button:hover {
+  background-color: #f5f6fa;
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.nav-button:active {
+  transform: translateY(0);
+}
+
+/* Center Panel - Professor Details */
+.professor-details-panel {
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 600px;
+}
+
+.professor-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  gap: 2rem;
+}
+
+.professor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.professor-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e2a3a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.professor-major {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+.matching-rate-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.matching-rate-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ef4444;
+  line-height: 1;
+}
+
+.matching-rate-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.radar-chart-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.rationale-section {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.rationale-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e2a3a;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.01em;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rationale-content {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.simulation-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background-color: #1e2a3a;
+  color: white;
+  border: 2px solid #1e2a3a;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.simulation-button:hover {
+  background-color: white;
+  color: #1e2a3a;
+  border-color: #1e2a3a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 42, 58, 0.15);
+}
+
+.simulation-button:active {
+  transform: translateY(0);
+}
+
+.arrow-icon {
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+/* Right Panel - Professor List */
+.professor-list-panel {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.professor-list-panel .panel-title {
+  color: #1e2a3a;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.professor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.professor-card {
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.professor-card:hover {
+  border-color: #32c3b0;
+  box-shadow: 0 2px 8px rgba(50, 195, 176, 0.15);
+  transform: translateY(-2px);
+}
+
+.professor-card.selected {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.professor-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.professor-card-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e2a3a;
+}
+
+.matching-badge {
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+}
+
+.professor-card.selected .matching-badge {
+  background-color: #dc2626;
+}
+
+.professor-card-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.professor-card-major {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.professor-card-divider {
+  opacity: 0.5;
+}
+
+.professor-card-areas {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .results-content {
+    grid-template-columns: 260px 1fr 300px;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 968px) {
+  .results-page {
+    padding: 1.5rem;
+  }
+
+  .results-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .applicant-profile-panel,
+  .professor-list-panel {
+    position: static;
+    max-height: none;
+  }
+
+  .professor-details-panel {
+    min-height: 500px;
+  }
+
+  .radar-chart-placeholder {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-page {
+    padding: 1rem;
+  }
+
+  .results-header {
+    padding: 1rem 0;
+  }
+
+  .results-title {
+    font-size: 1.4rem;
+  }
+
+  .applicant-profile-panel,
+  .professor-details-panel,
+  .professor-list-panel {
+    padding: 1.5rem;
+  }
+
+  .professor-name {
+    font-size: 1.5rem;
+  }
+
+  .matching-rate-value {
+    font-size: 2.5rem;
+  }
+}

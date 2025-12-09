@@ -1,0 +1,347 @@
+.applicant-form-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f5f6fa;
+}
+
+.applicant-form-container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Header */
+.form-header {
+  padding: 1.25rem 0;
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-red-bar {
+  width: 4px;
+  height: 28px;
+  background-color: #1e2a3a;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-label {
+  font-size: 1.15rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.department-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e2a3a;
+}
+
+.header-divider {
+  width: 1px;
+  height: 20px;
+  background-color: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.form-subtitle {
+  font-size: 1.15rem;
+  color: #6b7280;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Form Card */
+.form-card {
+  background-color: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e2a3a;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+/* Form Fields */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.field-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e2a3a;
+}
+
+.field-hint {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #1e2a3a;
+  opacity: 0.6;
+}
+
+.text-input {
+  padding: 1rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1e2a3a;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #32c3b0;
+  box-shadow: 0 0 0 3px rgba(50, 195, 176, 0.1);
+}
+
+.text-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Token Buttons */
+.token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.token-button {
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 24px;
+  background-color: white;
+  color: #1e2a3a;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.token-button:hover {
+  border-color: #32c3b0;
+  background-color: rgba(50, 195, 176, 0.05);
+}
+
+.token-button.selected {
+  border-color: #32c3b0;
+  background-color: #32c3b0;
+  color: white;
+  font-weight: 600;
+}
+
+/* Submit Button */
+.submit-button {
+  margin-top: 1rem;
+  padding: 1.25rem 2rem;
+  background: linear-gradient(135deg, #1e2a3a 0%, #2a3a4a 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.2);
+}
+
+.submit-button:hover {
+  background: linear-gradient(135deg, #2a3a4a 0%, #1e2a3a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 42, 58, 0.3);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+.submit-icon {
+  font-size: 1.25rem;
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-in 2.7s;
+  animation-fill-mode: both;
+}
+
+.toast-content {
+  background-color: #1e2a3a;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .applicant-form-page {
+    padding: 1.5rem;
+  }
+
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .header-red-bar {
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .header-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .form-card {
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .form-title {
+    font-size: 1.3rem;
+  }
+
+  .token-button {
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    padding: 1.1rem 1.75rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .applicant-form-page {
+    padding: 1rem;
+  }
+
+  .form-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .form-title {
+    font-size: 1.2rem;
+  }
+
+  .token-list {
+    gap: 0.5rem;
+  }
+
+  .token-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .toast-notification {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .toast-content {
+    min-width: 250px;
+    max-width: 90%;
+    padding: 0.875rem 1.25rem;
+  }
+
+  .toast-message {
+    font-size: 0.875rem;
+  }
+}
