@@ -52,7 +52,7 @@ function ChatSimulation() {
   };
 
   const handleViewResults = () => {
-    navigate("/results", {
+    navigate("/final-results", {
       state: {
         professor: professor,
         applicantData: applicantData,

@@ -622,6 +622,7 @@ function ResultsPage() {
           {/* Right Panel - Professor List */}
           <div className="professor-list-panel">
             <h2 className="panel-title">교수진 목록</h2>
+            <div className="professor-list-divider"></div>
             <div className="professor-list">
               {professors.map((professor) => {
                 const professorId = professor.professor_id || professor.id;
