@@ -128,210 +128,212 @@ function ChatSimulation() {
 
   return (
     <div className="chat-simulation-page">
-      {/* Page Title */}
-      <div className="page-title-section">
-        <h1 className="page-title">Step 3 - AI 대화 시뮬레이션</h1>
-      </div>
+      <div className="chat-simulation-container">
+        {/* Page Title */}
+        <div className="page-title-section">
+          <h1 className="page-title">Step 3 - AI 대화 시뮬레이션</h1>
+        </div>
 
-      <div className="chat-layout">
-        {/* Professor Info Card */}
-        <div className="professor-info-card">
-          <div className="professor-card-header">
-            <h2 className="professor-card-name">{professorName} 교수님</h2>
-            <p className="professor-card-major">{professor.major}</p>
-          </div>
-          <div className="professor-card-details" ref={professorCardRef}>
-            <div className="detail-item">
-              <span className="detail-label">매칭률</span>
-              <span className="detail-value">
-                {professor.total_score || professor.matchingRate}%
-              </span>
+        <div className="chat-layout">
+          {/* Professor Info Card */}
+          <div className="professor-info-card">
+            <div className="professor-card-header">
+              <h2 className="professor-card-name">{professorName} 교수님</h2>
+              <p className="professor-card-major">{professor.major}</p>
             </div>
-            {professor.researchAreas && (
+            <div className="professor-card-details" ref={professorCardRef}>
               <div className="detail-item">
-                <span className="detail-label">연구 분야</span>
+                <span className="detail-label">매칭률</span>
                 <span className="detail-value">
-                  {professor.researchAreas.join(", ")}
+                  {professor.total_score || professor.matchingRate}%
                 </span>
               </div>
-            )}
-
-            {/* 학력 */}
-            {professor.career && professor.career.학력 && (
-              <div className="detail-section">
-                <span className="detail-section-label">학력</span>
-                <div className="detail-section-content">
-                  {professor.career.학력.map((edu, index) => (
-                    <div key={index} className="education-item">
-                      <div className="education-degree">{edu.degree}</div>
-                      <div className="education-major">{edu.major}</div>
-                      <div className="education-institution">
-                        {edu.institution}
-                      </div>
-                    </div>
-                  ))}
+              {professor.researchAreas && (
+                <div className="detail-item">
+                  <span className="detail-label">연구 분야</span>
+                  <span className="detail-value">
+                    {professor.researchAreas.join(", ")}
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 경력 */}
-            {professor.career && professor.career.경력 && (
-              <div className="detail-section">
-                <span className="detail-section-label">경력</span>
-                <div className="detail-section-content">
-                  {professor.career.경력.map((career, index) => (
-                    <div key={index} className="career-item">
-                      <div className="career-period">{career.period}</div>
-                      <div className="career-position">{career.position}</div>
-                      <div className="career-institution">
-                        {career.institution}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 담당과목 */}
-            {professor.courses && professor.courses.석사 && (
-              <div className="detail-section">
-                <span className="detail-section-label">담당과목</span>
-                <div className="detail-section-content">
-                  <div className="course-type">석사</div>
-                  <div className="course-list">
-                    {professor.courses.석사.map((course, index) => (
-                      <div key={index} className="course-item">
-                        {course}
+              {/* 학력 */}
+              {professor.career && professor.career.학력 && (
+                <div className="detail-section">
+                  <span className="detail-section-label">학력</span>
+                  <div className="detail-section-content">
+                    {professor.career.학력.map((edu, index) => (
+                      <div key={index} className="education-item">
+                        <div className="education-degree">{edu.degree}</div>
+                        <div className="education-major">{edu.major}</div>
+                        <div className="education-institution">
+                          {edu.institution}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
-            {showProfessorScrollIndicator && (
-              <div className="scroll-indicator">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 10L12 15L17 10"
-                    stroke="#32C3B0"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
 
-        {/* Chat Container */}
-        <div className="chat-container">
-          {/* Header */}
-          <div className="chat-header">
-            <h2 className="chat-header-title">
-              AI 교수 - 학생 대화 시뮬레이션
-            </h2>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="chat-messages">
-            {messages.length === 0 ? (
-              <div className="welcome-message">
-                <p>
-                  안녕하세요! {professorName} 교수님과의 채팅을 시작해보세요.
-                </p>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`message ${
-                    message.sender === "user"
-                      ? "user-message"
-                      : "professor-message"
-                  }`}
-                >
-                  <div className="message-content">
-                    <p>{message.text}</p>
+              {/* 경력 */}
+              {professor.career && professor.career.경력 && (
+                <div className="detail-section">
+                  <span className="detail-section-label">경력</span>
+                  <div className="detail-section-content">
+                    {professor.career.경력.map((career, index) => (
+                      <div key={index} className="career-item">
+                        <div className="career-period">{career.period}</div>
+                        <div className="career-position">{career.position}</div>
+                        <div className="career-institution">
+                          {career.institution}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              )}
 
-          {/* Input Area */}
-          <div className="chat-input-area">
-            <input
-              type="text"
-              className="chat-input"
-              placeholder="메시지를 입력하세요..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleSendMessage();
-                }
-              }}
-            />
-            <button className="send-button" onClick={handleSendMessage}>
-              전송
-            </button>
-          </div>
-        </div>
-
-        {/* Right Side Card */}
-        <div className="right-info-card">
-          <div className="right-card-header">
-            <h3 className="right-card-title">대표 논문 목록</h3>
-          </div>
-          <div className="right-card-content" ref={paperListRef}>
-            <div className="paper-list">
-              {professor.papers && professor.papers.length > 0 ? (
-                professor.papers.map((yearGroup, yearIndex) =>
-                  yearGroup.papers.map((paper, paperIndex) => (
-                    <div
-                      key={`${yearGroup.year}-${paperIndex}`}
-                      className="paper-item"
-                    >
-                      <div className="paper-title">{paper.title}</div>
-                      <div className="paper-info">
-                        <span className="paper-journal">{paper.journal}</span>
-                        <span className="paper-year">, {yearGroup.year}</span>
-                      </div>
+              {/* 담당과목 */}
+              {professor.courses && professor.courses.석사 && (
+                <div className="detail-section">
+                  <span className="detail-section-label">담당과목</span>
+                  <div className="detail-section-content">
+                    <div className="course-type">석사</div>
+                    <div className="course-list">
+                      {professor.courses.석사.map((course, index) => (
+                        <div key={index} className="course-item">
+                          {course}
+                        </div>
+                      ))}
                     </div>
-                  ))
-                )
-              ) : (
-                <div className="no-papers">
-                  <p>논문 정보가 없습니다.</p>
+                  </div>
+                </div>
+              )}
+              {showProfessorScrollIndicator && (
+                <div className="scroll-indicator">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7 10L12 15L17 10"
+                      stroke="#32C3B0"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
               )}
             </div>
-            {showScrollIndicator && (
-              <div className="scroll-indicator">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 10L12 15L17 10"
-                    stroke="#32C3B0"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+          </div>
+
+          {/* Chat Container */}
+          <div className="chat-container">
+            {/* Header */}
+            <div className="chat-header">
+              <h2 className="chat-header-title">
+                AI 교수 - 학생 대화 시뮬레이션
+              </h2>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="chat-messages">
+              {messages.length === 0 ? (
+                <div className="welcome-message">
+                  <p>
+                    안녕하세요! {professorName} 교수님과의 채팅을 시작해보세요.
+                  </p>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${
+                      message.sender === "user"
+                        ? "user-message"
+                        : "professor-message"
+                    }`}
+                  >
+                    <div className="message-content">
+                      <p>{message.text}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Input Area */}
+            <div className="chat-input-area">
+              <input
+                type="text"
+                className="chat-input"
+                placeholder="메시지를 입력하세요..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <button className="send-button" onClick={handleSendMessage}>
+                전송
+              </button>
+            </div>
+          </div>
+
+          {/* Right Side Card */}
+          <div className="right-info-card">
+            <div className="right-card-header">
+              <h3 className="right-card-title">대표 논문 목록</h3>
+            </div>
+            <div className="right-card-content" ref={paperListRef}>
+              <div className="paper-list">
+                {professor.papers && professor.papers.length > 0 ? (
+                  professor.papers.map((yearGroup, yearIndex) =>
+                    yearGroup.papers.map((paper, paperIndex) => (
+                      <div
+                        key={`${yearGroup.year}-${paperIndex}`}
+                        className="paper-item"
+                      >
+                        <div className="paper-title">{paper.title}</div>
+                        <div className="paper-info">
+                          <span className="paper-journal">{paper.journal}</span>
+                          <span className="paper-year">, {yearGroup.year}</span>
+                        </div>
+                      </div>
+                    ))
+                  )
+                ) : (
+                  <div className="no-papers">
+                    <p>논문 정보가 없습니다.</p>
+                  </div>
+                )}
               </div>
-            )}
+              {showScrollIndicator && (
+                <div className="scroll-indicator">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7 10L12 15L17 10"
+                      stroke="#32C3B0"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,12 @@
 .results-page {
   min-height: 100vh;
   background-color: #f5f6fa;
-  padding: 2rem;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  width: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .results-container {
@@ -9,7 +14,8 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.25rem;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -18,7 +24,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  padding: 1.5rem 0;
+  padding: 0.75rem 0;
 }
 
 .header-icon {
@@ -26,7 +32,7 @@
 }
 
 .results-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1e2a3a;
   margin: 0;
@@ -45,14 +51,14 @@
 .applicant-profile-panel {
   background: linear-gradient(135deg, #1e2a3a 0%, #2a3a4a 100%);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.75rem;
   color: white;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
   box-shadow: 0 4px 16px rgba(30, 42, 58, 0.2);
   position: sticky;
-  top: 2rem;
+  top: 1.5rem;
 }
 
 .profile-header {
@@ -147,11 +153,11 @@
 .professor-details-panel {
   background-color: white;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.75rem;
   box-shadow: 0 4px 16px rgba(30, 42, 58, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   min-height: 600px;
 }
 
@@ -160,7 +166,7 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
   border-bottom: 2px solid #e5e7eb;
   gap: 2rem;
 }
@@ -288,8 +294,8 @@
   flex-direction: column;
   gap: 1.25rem;
   position: sticky;
-  top: 2rem;
-  max-height: calc(100vh - 4rem);
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
   overflow-y: auto;
 }
 
@@ -391,12 +397,16 @@
 
 @media (max-width: 968px) {
   .results-page {
-    padding: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .results-container {
+    gap: 1.25rem;
   }
 
   .results-content {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   .applicant-profile-panel,
@@ -416,11 +426,15 @@
 
 @media (max-width: 480px) {
   .results-page {
-    padding: 1rem;
+    padding: 0.75rem;
+  }
+
+  .results-container {
+    gap: 1rem;
   }
 
   .results-header {
-    padding: 1rem 0;
+    padding: 0.875rem 0;
   }
 
   .results-title {
