@@ -51,6 +51,15 @@ function ChatSimulation() {
     }, 1000);
   };
 
+  const handleViewResults = () => {
+    navigate("/results", {
+      state: {
+        professor: professor,
+        applicantData: applicantData,
+      },
+    });
+  };
+
   // 논문 목록 스크롤 가능 여부 및 위치 감지
   useEffect(() => {
     const checkScroll = () => {
@@ -238,6 +247,12 @@ function ChatSimulation() {
               <h2 className="chat-header-title">
                 AI 교수 - 학생 대화 시뮬레이션
               </h2>
+              <button
+                className="view-results-button"
+                onClick={handleViewResults}
+              >
+                최종 적합도 분석 결과 보기
+              </button>
             </div>
 
             {/* Chat Messages */}
