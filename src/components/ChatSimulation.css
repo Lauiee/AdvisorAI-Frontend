@@ -497,6 +497,45 @@
 }
 
 /* Input Area */
+/* Question Presets */
+.question-presets {
+  padding: 1.5rem 2rem;
+  border-top: 2px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.presets-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.presets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preset-button {
+  padding: 0.75rem 1rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e2a3a;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.preset-button:hover {
+  background-color: #f3f4f6;
+  border-color: #32c3b0;
+  color: #32c3b0;
+}
+
 .chat-input-area {
   padding: 1.5rem 2rem;
   border-top: 2px solid #e5e7eb;
@@ -651,6 +690,15 @@
 
   .message-content {
     max-width: 85%;
+  }
+
+  .question-presets {
+    padding: 1rem 1.5rem;
+  }
+
+  .preset-button {
+    font-size: 0.85rem;
+    padding: 0.625rem 0.875rem;
   }
 
   .chat-input-area {

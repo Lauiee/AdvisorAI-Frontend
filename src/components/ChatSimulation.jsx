@@ -16,6 +16,19 @@ function ChatSimulation() {
   const paperListRef = useRef(null);
   const professorCardRef = useRef(null);
 
+  // 질문 프리셋
+  const questionPresets = [
+    "교수님의 연구 분야에 대해 더 자세히 알고 싶습니다.",
+    "제가 관심 있는 연구 주제와 교수님의 연구 방향이 잘 맞는지 궁금합니다.",
+    "연구실의 분위기와 협업 방식에 대해 궁금합니다.",
+    "학위 과정 중 어떤 역량을 기르는 것이 중요할까요?",
+    "교수님께서 학생에게 가장 중요하게 생각하시는 자질은 무엇인가요?",
+  ];
+
+  const handlePresetClick = (preset) => {
+    setInputMessage(preset);
+  };
+
   const handleGoBack = () => {
     navigate("/results", {
       state: {
@@ -280,6 +293,24 @@ function ChatSimulation() {
                 ))
               )}
             </div>
+
+            {/* Question Presets */}
+            {messages.length === 0 && (
+              <div className="question-presets">
+                <div className="presets-label">질문 프리셋</div>
+                <div className="presets-list">
+                  {questionPresets.map((preset, index) => (
+                    <button
+                      key={index}
+                      className="preset-button"
+                      onClick={() => handlePresetClick(preset)}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Input Area */}
             <div className="chat-input-area">

@@ -77,7 +77,7 @@ function FinalResultsPage() {
               <div className="initial-score-value">
                 {finalResults.initial_score}%
               </div>
-              <div className="initial-score-label">초기 매칭률</div>
+              <div className="initial-score-label">최종 매칭률</div>
             </div>
           </div>
 
