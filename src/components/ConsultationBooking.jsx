@@ -41,6 +41,7 @@ function ConsultationBooking() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -49,7 +50,7 @@ function ConsultationBooking() {
     }));
 
     // 메모가 변경되면 미리보기도 업데이트
-    if (field === "memo" && value) {
+    if (field === "memo") {
       setEmailPreview((prev) => ({
         ...prev,
         body: value,
@@ -140,7 +141,7 @@ function ConsultationBooking() {
     }
   }, [showToast]);
 
-  const handleAdvisorAIDraft = () => {
+  const handleAdvisorAIDraft = async () => {
     // 날짜와 시간 선택 확인
     if (!formData.date || !formData.time) {
       const missingFields = [];
@@ -152,10 +153,73 @@ function ConsultationBooking() {
       return;
     }
 
-    // TODO: Advisor.AI API 연동
-    const draftEmail = `**제목:** [기술경영전문대학원 지원 희망] ${professorName} 교수님께 상담 요청 드립니다
+    // API Base URL
+    const API_BASE_URL = "http://api.advisor-ai.net:8000";
 
-**${professorName} 교수님께,**
+    setIsLoadingDraft(true);
+
+    try {
+      // 날짜 형식 변환 (YYYY-MM-DD)
+      const selectedDate = formData.date;
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+
+      // API 요청 본문 구성
+      const requestBody = {
+        applicant_id: finalResults?.applicant_id || 0,
+        professor_id: professor?.professor_id || "",
+        session_id: finalResults?.session_id || 0,
+        appointment_date: formattedDate,
+        appointment_time: formData.time,
+        consultation_method: formData.consultationMethod,
+      };
+
+      // API 호출
+      const response = await fetch(`${API_BASE_URL}/email/draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`);
+      }
+
+      const draftResult = await response.json();
+
+      // 응답에서 email_draft 가져와서 초안으로 설정
+      if (draftResult.email_draft) {
+        // 마크다운 문법 제거 (이메일은 마크다운이 아니므로)
+        const cleanDraft = draftResult.email_draft
+          .replace(/\*\*([^*]+)\*\*/g, "$1") // **텍스트** -> 텍스트
+          .replace(/\*([^*]+)\*/g, "$1") // *텍스트* -> 텍스트
+          .replace(/#{1,6}\s+/g, "") // # 제목 -> 제목
+          .trim();
+
+        setFormData((prev) => ({
+          ...prev,
+          memo: cleanDraft,
+        }));
+        setEmailPreview((prev) => ({
+          ...prev,
+          body: cleanDraft,
+        }));
+        showToastMessage("메일 초안 작성이 완료되었습니다.");
+      } else {
+        throw new Error("이메일 초안을 받을 수 없습니다.");
+      }
+    } catch (error) {
+      console.error("이메일 초안 작성 API 오류:", error);
+      showToastMessage(
+        "이메일 초안 작성 중 오류가 발생했습니다. 다시 시도해주세요."
+      );
+    } finally {
+      setIsLoadingDraft(false);
+    }
+    const draftEmail = `제목: [기술경영전문대학원 지원 희망] ${professorName} 교수님께 상담 요청 드립니다
+
+${professorName} 교수님께,
 
 안녕하십니까. 저는 이번 기술경영전문대학원(MOT) 진학을 희망하는 지원생 ${applicantName}입니다. 바쁘신 와중에 귀한 시간을 내어 이메일을 읽어주셔서 진심으로 감사드립니다.
 
@@ -345,12 +409,23 @@ ${applicantName} 드림`;
 
             <div className="form-field memo-field">
               <label className="field-label">메모 입력 (메일 본문)</label>
-              <textarea
-                className="textarea-input"
-                placeholder="메일 본문을 입력하세요..."
-                value={formData.memo}
-                onChange={(e) => handleInputChange("memo", e.target.value)}
-              />
+              <div className="textarea-wrapper">
+                {isLoadingDraft && (
+                  <div className="memo-loading-overlay">
+                    <div className="memo-loading-spinner"></div>
+                    <span className="memo-loading-text">
+                      메일 초안 작성 중...
+                    </span>
+                  </div>
+                )}
+                <textarea
+                  className="textarea-input"
+                  placeholder="메일 본문을 입력하세요..."
+                  value={formData.memo}
+                  onChange={(e) => handleInputChange("memo", e.target.value)}
+                  disabled={isLoadingDraft}
+                />
+              </div>
             </div>
 
             <button className="advisor-button" onClick={handleAdvisorAIDraft}>

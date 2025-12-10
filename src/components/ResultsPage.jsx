@@ -323,14 +323,79 @@ const mockProfessors = [
   },
 ];
 
+// 교수님별 하드코딩된 논문 데이터 매핑
+const professorPapersMap = {};
+mockProfessors.forEach((prof) => {
+  if (prof.papers) {
+    professorPapersMap[prof.professor_id] = prof.papers;
+  }
+});
+
 function ResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   // location.state에서 전달받은 데이터 사용 (없으면 목 데이터)
   const applicantData = location.state?.applicantData || mockApplicantData;
-  const professors = location.state?.professors || mockProfessors;
   const selectedSchool = location.state?.school || "기술경영전문대학원(MOT)";
+  const professorsData = location.state?.professorsData;
+  const apiResponse = location.state?.apiResponse;
+
+  // API 응답에서 교수님 목록 변환
+  const transformProfessors = () => {
+    if (professorsData?.professors && apiResponse?.results) {
+      // 매칭 결과를 professor_id로 매핑
+      const matchResultsMap = {};
+      apiResponse.results.forEach((result) => {
+        matchResultsMap[result.professor_id] = result;
+      });
+
+      // 교수님 기본 정보와 매칭 결과를 합치기
+      return professorsData.professors
+        .map((prof, index) => {
+          const matchResult = matchResultsMap[prof.professor_id];
+
+          // research_fields를 배열로 변환 (쉼표로 구분된 문자열일 수 있음)
+          const researchAreas = prof.research_fields
+            ? prof.research_fields.split(",").map((field) => field.trim())
+            : [];
+
+          // 매칭 결과가 있으면 해당 데이터 사용, 없으면 기본값
+          const totalScore = matchResult?.total_score || 0;
+          const breakdown = matchResult?.breakdown || {
+            A: 0,
+            B: 0,
+            C: 0,
+            D: 0,
+            E: 0,
+          };
+          const rationale = matchResult?.rationale || "";
+          const indicatorScores = matchResult?.indicator_scores || [];
+
+          // 하드코딩된 논문 데이터 가져오기
+          const papers = professorPapersMap[prof.professor_id] || [];
+
+          return {
+            professor_id: prof.professor_id,
+            professor_name: matchResult?.professor_name || prof.name, // 매칭 결과의 이름 우선 사용
+            major: prof.major, // API에서 받은 major 사용
+            researchAreas: researchAreas,
+            total_score: totalScore,
+            matchingRate: totalScore, // total_score와 동일하게 설정
+            isSelected: index === 0, // 첫 번째 교수님을 기본 선택
+            breakdown: breakdown,
+            rationale: rationale,
+            indicator_scores: indicatorScores,
+            papers: papers, // 하드코딩된 논문 데이터 추가
+          };
+        })
+        .sort((a, b) => b.total_score - a.total_score); // total_score 기준 내림차순 정렬
+    }
+    // API 데이터가 없으면 목 데이터 사용
+    return mockProfessors;
+  };
+
+  const professors = transformProfessors();
 
   const [selectedProfessor, setSelectedProfessor] = useState(
     professors.find((p) => p.isSelected) || professors[0]
@@ -505,13 +570,52 @@ function ResultsPage() {
     navigate("/");
   };
 
-  const handleChatSimulation = () => {
-    navigate("/chat-simulation", {
-      state: {
-        professor: selectedProfessor,
-        applicantData: applicantData,
-      },
-    });
+  const handleChatSimulation = async () => {
+    // API Base URL
+    const API_BASE_URL = "http://api.advisor-ai.net:8000";
+
+    try {
+      // API 요청 본문 구성
+      const requestBody = {
+        applicant_id: apiResponse?.applicant_id,
+        professor_id: selectedProfessor.professor_id,
+      };
+
+      // API 호출
+      const response = await fetch(`${API_BASE_URL}/chat/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`);
+      }
+
+      const sessionResult = await response.json();
+
+      // 채팅 시뮬레이션 페이지로 이동
+      navigate("/chat-simulation", {
+        state: {
+          professor: selectedProfessor,
+          applicantData: applicantData,
+          sessionData: sessionResult, // API 응답 데이터
+          professorsData: professorsData, // 교수님 목록 조회 데이터
+        },
+      });
+    } catch (error) {
+      console.error("채팅 세션 생성 오류:", error);
+      // 에러가 발생해도 페이지 이동은 진행 (기존 동작 유지)
+      navigate("/chat-simulation", {
+        state: {
+          professor: selectedProfessor,
+          applicantData: applicantData,
+          professorsData: professorsData, // 교수님 목록 조회 데이터
+        },
+      });
+    }
   };
 
   return (
@@ -612,7 +716,7 @@ function ResultsPage() {
                   className="simulation-button"
                   onClick={handleChatSimulation}
                 >
-                  <span>Advisor.AI 채팅 시뮬레이션</span>
+                  <span>Advisor.AI 대화형 시뮬레이션</span>
                   <span className="arrow-icon">→</span>
                 </button>
               </div>

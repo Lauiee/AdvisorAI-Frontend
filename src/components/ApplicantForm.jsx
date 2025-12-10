@@ -4,10 +4,10 @@ import LoadingScreen from "./LoadingScreen";
 import "./ApplicantForm.css";
 
 const interestKeywords = [
-  "디지털전환",
-  "조직학습",
-  "기술혁신",
-  "기술전략",
+  "디지털 전환",
+  "조직 학습",
+  "기술 혁신",
+  "기술 전략",
   "지속가능경영",
 ];
 
@@ -24,6 +24,9 @@ function ApplicantForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedSchool = location.state?.school || "기술경영전문대학원(MOT)";
+
+  // API Base URL
+  const API_BASE_URL = "http://api.advisor-ai.net:8000";
 
   const [formData, setFormData] = useState({
     name: "홍길동",
@@ -99,18 +102,49 @@ function ApplicantForm() {
     setIsLoading(true);
 
     try {
-      // TODO: API 호출
-      // const response = await fetch('/api/analyze', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      // const result = await response.json();
+      // API 요청 본문 구성
+      const requestBody = {
+        request: {
+          interest_keyword: formData.interestKeyword,
+          learning_styles: formData.learningStyles,
+          major: formData.major,
+          name: formData.name,
+        },
+      };
 
-      // 임시로 3초 대기 (실제 API 호출로 대체)
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // 두 API를 병렬로 호출
+      const [matchResponse, professorsResponse] = await Promise.all([
+        // 매칭 API 호출
+        fetch(`${API_BASE_URL}/match`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }),
+        // 교수님 정보 API 호출
+        fetch(`${API_BASE_URL}/graduate-schools/1/professors`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+      ]);
 
-      // 결과 페이지로 이동 (목 데이터와 함께 전달)
+      if (!matchResponse.ok) {
+        throw new Error(`매칭 API 요청 실패: ${matchResponse.status}`);
+      }
+
+      if (!professorsResponse.ok) {
+        throw new Error(
+          `교수님 정보 API 요청 실패: ${professorsResponse.status}`
+        );
+      }
+
+      const matchResult = await matchResponse.json();
+      const professorsResult = await professorsResponse.json();
+
+      // 결과 페이지로 이동 (API 응답과 함께 전달)
       navigate("/results", {
         state: {
           formData: formData,
@@ -121,13 +155,14 @@ function ApplicantForm() {
             keyword: formData.interestKeyword,
             learningStyles: formData.learningStyles,
           },
-          // TODO: API 응답으로 교수 목록 받아오기
-          professors: null, // API 응답으로 대체 예정
+          apiResponse: matchResult, // 매칭 API 응답 데이터
+          professorsData: professorsResult, // 교수님 정보 API 응답 데이터
         },
       });
     } catch (error) {
-      console.error("Error:", error);
+      console.error("API 요청 오류:", error);
       setIsLoading(false);
+      showToastMessage("요청 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 

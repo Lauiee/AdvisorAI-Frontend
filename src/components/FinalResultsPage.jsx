@@ -23,11 +23,25 @@ function FinalResultsPage() {
     success: true,
   };
 
-  const finalResults = location.state?.finalResults || mockFinalResults;
-  const professorName = finalResults.professor_name;
+  // API 응답이 있으면 우선 사용, 없으면 mock 데이터 사용
+  const finalResults = location.state?.finalResults 
+    ? location.state.finalResults 
+    : mockFinalResults;
+  
+  // 디버깅: API 응답 확인
+  console.log("Final Results:", finalResults);
+  console.log("Report:", finalResults.report);
+  
+  // API 응답에서 교수님 정보 가져오기 (없으면 이전 페이지에서 전달받은 professor 사용)
+  const professorName = finalResults.professor_name || professor?.professor_name || professor?.name || "박현규";
   const professorMajor = professor?.major || "기술경영";
-  const researchAreas =
-    professor?.researchAreas?.join("·") || "기술혁신·디지털전환";
+  const researchAreas = professor?.researchAreas?.join("·") || "기술혁신·디지털전환";
+  
+  // 최종 매칭률은 final_score 사용
+  const finalMatchingRate = finalResults.final_score || finalResults.initial_score || 80;
+  
+  // 리포트 내용 (API 응답 우선 사용)
+  const reportContent = finalResults.report || "리포트 데이터가 없습니다.";
 
   const handleReSearch = () => {
     navigate("/results", {
@@ -75,7 +89,7 @@ function FinalResultsPage() {
             </div>
             <div className="card-header-right">
               <div className="initial-score-value">
-                {finalResults.initial_score}%
+                {finalMatchingRate}%
               </div>
               <div className="initial-score-label">최종 매칭률</div>
             </div>
@@ -84,7 +98,7 @@ function FinalResultsPage() {
           {/* Card Content */}
           <div className="card-content">
             <div className="report-content">
-              <ReactMarkdown>{finalResults.report}</ReactMarkdown>
+              <ReactMarkdown>{reportContent}</ReactMarkdown>
             </div>
           </div>
 
