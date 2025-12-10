@@ -154,7 +154,7 @@ function ConsultationBooking() {
     }
 
     // API Base URL
-    const API_BASE_URL = "https://api.advisor-ai.net:8000";
+    const API_BASE_URL = "https://api.advisor-ai.net";
 
     setIsLoadingDraft(true);
 

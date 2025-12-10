@@ -26,7 +26,7 @@ function ApplicantForm() {
   const selectedSchool = location.state?.school || "기술경영전문대학원(MOT)";
 
   // API Base URL
-  const API_BASE_URL = "https://api.advisor-ai.net:8000";
+  const API_BASE_URL = "https://api.advisor-ai.net";
 
   const [formData, setFormData] = useState({
     name: "홍길동",

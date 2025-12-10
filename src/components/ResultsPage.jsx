@@ -572,7 +572,7 @@ function ResultsPage() {
 
   const handleChatSimulation = async () => {
     // API Base URL
-    const API_BASE_URL = "https://api.advisor-ai.net:8000";
+    const API_BASE_URL = "https://api.advisor-ai.net";
 
     try {
       // API 요청 본문 구성

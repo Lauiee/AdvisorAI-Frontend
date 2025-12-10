@@ -70,7 +70,7 @@ function ChatSimulation() {
     if (!inputMessage.trim()) return;
 
     // API Base URL
-    const API_BASE_URL = "https://api.advisor-ai.net:8000";
+    const API_BASE_URL = "https://api.advisor-ai.net";
 
     // 사용자 메시지 추가
     const newMessage = {
@@ -166,7 +166,7 @@ function ChatSimulation() {
 
   const handleViewResults = async () => {
     // API Base URL
-    const API_BASE_URL = "https://api.advisor-ai.net:8000";
+    const API_BASE_URL = "https://api.advisor-ai.net";
 
     // 로딩 상태 시작
     console.log("로딩 시작");
