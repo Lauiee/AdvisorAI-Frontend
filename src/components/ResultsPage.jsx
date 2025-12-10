@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Chart as ChartJS,
@@ -341,8 +341,8 @@ function ResultsPage() {
   const professorsData = location.state?.professorsData;
   const apiResponse = location.state?.apiResponse;
 
-  // API 응답에서 교수님 목록 변환
-  const transformProfessors = () => {
+  // API 응답에서 교수님 목록 변환 (useMemo로 최적화)
+  const professors = useMemo(() => {
     if (professorsData?.professors && apiResponse?.results) {
       // 매칭 결과를 professor_id로 매핑
       const matchResultsMap = {};
@@ -369,7 +369,8 @@ function ResultsPage() {
             D: 0,
             E: 0,
           };
-          const rationale = matchResult?.rationale || "";
+          // rationale은 더 이상 API에서 오지 않으므로 빈 문자열로 초기화
+          const rationale = "";
           const indicatorScores = matchResult?.indicator_scores || [];
 
           // 하드코딩된 논문 데이터 가져오기
@@ -384,7 +385,7 @@ function ResultsPage() {
             matchingRate: totalScore, // total_score와 동일하게 설정
             isSelected: index === 0, // 첫 번째 교수님을 기본 선택
             breakdown: breakdown,
-            rationale: rationale,
+            rationale: rationale, // 빈 문자열로 초기화, 나중에 API로 가져올 예정
             indicator_scores: indicatorScores,
             papers: papers, // 하드코딩된 논문 데이터 추가
           };
@@ -393,13 +394,278 @@ function ResultsPage() {
     }
     // API 데이터가 없으면 목 데이터 사용
     return mockProfessors;
-  };
+  }, [professorsData, apiResponse]);
 
-  const professors = transformProfessors();
+  // 초기 선택된 교수 찾기
+  const initialSelectedProfessor =
+    professors.find((p) => p.isSelected) || professors[0];
 
   const [selectedProfessor, setSelectedProfessor] = useState(
-    professors.find((p) => p.isSelected) || professors[0]
+    initialSelectedProfessor
   );
+
+  // professors가 준비되면 첫 번째 교수를 선택
+  useEffect(() => {
+    if (professors.length > 0) {
+      const firstProfessor =
+        professors.find((p) => p.isSelected) || professors[0];
+      // 현재 선택된 교수가 없거나 다른 교수면 업데이트
+      if (
+        !selectedProfessor?.professor_id ||
+        selectedProfessor.professor_id !== firstProfessor.professor_id
+      ) {
+        setSelectedProfessor(firstProfessor);
+      }
+    }
+  }, [professors]);
+
+  // SSE 연결을 위한 ref (AbortController와 reader 추적)
+  const abortControllerRef = useRef(null);
+  const readerRef = useRef(null);
+  const isRequestingRef = useRef(false); // 요청 중인지 추적
+  const hasInitialRequestRef = useRef(false); // 초기 요청이 시작되었는지 추적
+
+  // 해석 요약을 SSE로 가져오는 함수
+  const fetchRationaleSSE = useCallback(async (professorId, applicantId) => {
+    const API_BASE_URL = "https://api.advisor-ai.net";
+
+    // 이미 요청 중이면 무시
+    if (isRequestingRef.current) {
+      console.log("⚠️ 이미 SSE 요청 진행 중, 중복 요청 무시");
+      return;
+    }
+
+    // 기존 연결이 있으면 종료
+    if (abortControllerRef.current) {
+      console.log("🛑 기존 SSE 연결 종료");
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (readerRef.current) {
+      try {
+        readerRef.current.cancel();
+      } catch (e) {
+        // 이미 종료된 경우 무시
+      }
+      readerRef.current = null;
+    }
+
+    // 요청 시작 표시
+    isRequestingRef.current = true;
+
+    try {
+      const requestBody = {
+        applicant_id: applicantId,
+        professor_id: professorId,
+      };
+
+      // 초기 rationale을 빈 문자열로 설정
+      setSelectedProfessor((prev) => {
+        if (prev?.professor_id === professorId) {
+          return {
+            ...prev,
+            rationale: "",
+          };
+        }
+        return prev;
+      });
+
+      // AbortController 생성
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      // POST 요청으로 SSE 스트림 받기
+      const requestStartTime = Date.now();
+      const response = await fetch(`${API_BASE_URL}/match/rationale`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify(requestBody),
+        signal: abortController.signal,
+      });
+
+      const requestTime = Date.now() - requestStartTime;
+      console.log(`📥 SSE 응답 받음 (${requestTime}ms):`, response.status);
+
+      if (!response.ok) {
+        throw new Error(`해석 요약 API 요청 실패: ${response.status}`);
+      }
+
+      // ReadableStream으로 SSE 데이터 읽기
+      const reader = response.body.getReader();
+      readerRef.current = reader;
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let firstChunkTime = null;
+
+      const readStream = async () => {
+        try {
+          while (true) {
+            // AbortController로 취소되었는지 확인
+            if (abortController.signal.aborted) {
+              console.log("❌ SSE 스트림 취소됨");
+              break;
+            }
+
+            const { done, value } = await reader.read();
+
+            if (done) {
+              console.log("✅ SSE 스트림 종료");
+              break;
+            }
+
+            // 첫 번째 청크 도착 시간 기록
+            if (!firstChunkTime) {
+              firstChunkTime = Date.now();
+              const timeToFirstChunk = firstChunkTime - requestStartTime;
+              console.log(`📨 첫 번째 SSE 청크 도착 (${timeToFirstChunk}ms)`);
+            }
+
+            // 청크를 디코딩하고 버퍼에 추가
+            buffer += decoder.decode(value, { stream: true });
+
+            // SSE 형식 파싱 (data: 로 시작하는 라인)
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // 마지막 불완전한 라인은 버퍼에 보관
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6); // "data: " 제거
+
+                try {
+                  // JSON 파싱
+                  const parsed = JSON.parse(data);
+
+                  // done이 true이면 스트림 종료
+                  if (parsed.done === true) {
+                    console.log("SSE 스트림 완료");
+                    break;
+                  }
+
+                  // content 필드에서 텍스트 가져오기
+                  const content = parsed.content || "";
+
+                  // 선택된 교수의 rationale 업데이트 (누적)
+                  if (content) {
+                    setSelectedProfessor((prev) => {
+                      if (prev?.professor_id === professorId) {
+                        return {
+                          ...prev,
+                          rationale: (prev.rationale || "") + content,
+                        };
+                      }
+                      return prev;
+                    });
+                  }
+                } catch (e) {
+                  console.error("SSE 데이터 파싱 오류:", e, "데이터:", data);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          if (error.name === "AbortError") {
+            console.log("ℹ️ SSE 스트림이 취소되었습니다 (정상 동작)");
+          } else {
+            console.error("SSE 스트림 읽기 오류:", error);
+          }
+        } finally {
+          try {
+            reader.releaseLock();
+          } catch (e) {
+            // 이미 해제된 경우 무시
+          }
+          readerRef.current = null;
+          abortControllerRef.current = null;
+          isRequestingRef.current = false;
+        }
+      };
+
+      readStream();
+    } catch (error) {
+      // AbortError는 정상적인 취소이므로 에러로 처리하지 않음
+      if (error.name === "AbortError") {
+        console.log("ℹ️ SSE 요청이 취소되었습니다 (정상 동작)");
+      } else {
+        console.error("해석 요약 가져오기 오류:", error);
+        // 에러 발생 시 빈 문자열로 설정
+        setSelectedProfessor((prev) => {
+          if (prev?.professor_id === professorId) {
+            return {
+              ...prev,
+              rationale: "",
+            };
+          }
+          return prev;
+        });
+      }
+    } finally {
+      // 요청 완료 표시
+      isRequestingRef.current = false;
+    }
+  }, []);
+
+  // 페이지 렌더링 시 및 교수가 변경될 때마다 해석 요약 가져오기
+  useEffect(() => {
+    // 모든 필요한 데이터가 준비되었는지 확인
+    const hasProfessor = !!selectedProfessor?.professor_id;
+    const hasApplicantId = !!apiResponse?.applicant_id;
+    const hasProfessors = professors.length > 0;
+
+    if (hasProfessor && hasApplicantId && hasProfessors) {
+      console.log("✅ SSE 요청 시작:", {
+        professor_id: selectedProfessor.professor_id,
+        applicant_id: apiResponse.applicant_id,
+        timestamp: new Date().toISOString(),
+      });
+      fetchRationaleSSE(
+        selectedProfessor.professor_id,
+        apiResponse.applicant_id
+      );
+    } else {
+      console.log("⏳ SSE 요청 대기 중:", {
+        hasProfessor,
+        hasApplicantId,
+        hasProfessors,
+        selectedProfessor: selectedProfessor?.professor_id,
+        applicantId: apiResponse?.applicant_id,
+        professorsCount: professors.length,
+      });
+    }
+
+    // cleanup은 교수 변경 시에는 실행하지 않음
+    // React Strict Mode의 이중 실행을 방지하기 위해 cleanup에서 즉시 취소하지 않음
+    return () => {
+      // cleanup은 컴포넌트가 실제로 언마운트될 때만 실행되도록 함
+      // 교수가 변경되거나 재렌더링될 때는 취소하지 않음
+    };
+  }, [
+    selectedProfessor?.professor_id,
+    apiResponse?.applicant_id,
+    fetchRationaleSSE,
+  ]);
+
+  // 컴포넌트 언마운트 시에만 정리하는 별도의 useEffect
+  useEffect(() => {
+    return () => {
+      // 컴포넌트가 완전히 언마운트될 때만 정리
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      if (readerRef.current) {
+        try {
+          readerRef.current.cancel();
+        } catch (e) {
+          // 이미 종료된 경우 무시
+        }
+        readerRef.current = null;
+      }
+      isRequestingRef.current = false;
+    };
+  }, []); // 빈 의존성 배열로 마운트/언마운트 시에만 실행
 
   // 레이더 차트용 데이터 준비 (5개 지표)
   const getChartData = (professor) => {
@@ -706,21 +972,19 @@ function ResultsPage() {
             <div className="radar-chart-container">
               <Radar data={radarChartData} options={radarChartOptions} />
             </div>
-            {selectedProfessor.rationale && (
-              <div className="rationale-section">
-                <h3 className="rationale-title">해석 요약</h3>
-                <p className="rationale-content">
-                  {selectedProfessor.rationale}
-                </p>
-                <button
-                  className="simulation-button"
-                  onClick={handleChatSimulation}
-                >
-                  <span>Advisor.AI 대화형 시뮬레이션</span>
-                  <span className="arrow-icon">→</span>
-                </button>
-              </div>
-            )}
+            <div className="rationale-section">
+              <h3 className="rationale-title">해석 요약</h3>
+              <p className="rationale-content">
+                {selectedProfessor.rationale || "해석 요약을 불러오는 중..."}
+              </p>
+              <button
+                className="simulation-button"
+                onClick={handleChatSimulation}
+              >
+                <span>Advisor.AI 대화형 시뮬레이션</span>
+                <span className="arrow-icon">→</span>
+              </button>
+            </div>
           </div>
 
           {/* Right Panel - Professor List */}
