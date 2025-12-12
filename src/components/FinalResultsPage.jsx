@@ -89,13 +89,17 @@ function FinalResultsPage() {
         });
       };
 
-      // 전역 변수에 내용이 있으면 먼저 표시
-      if (window.finalResultsContent) {
+      // initialReportContent가 없고 전역 변수에 내용이 있으면 표시
+      // (새로운 요청이면 전역 변수는 비어있을 것)
+      if (!initialReportContent && window.finalResultsContent) {
         console.log(
           "FinalResultsPage - 전역 변수에서 내용 읽기:",
           window.finalResultsContent.length
         );
         setReportContent(window.finalResultsContent);
+      } else if (initialReportContent) {
+        // initialReportContent가 있으면 그것을 사용 (새로운 요청)
+        setReportContent(initialReportContent);
       }
 
       // 주기적으로 전역 변수를 체크하여 업데이트

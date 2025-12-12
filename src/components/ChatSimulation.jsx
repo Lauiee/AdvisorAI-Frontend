@@ -173,6 +173,10 @@ function ChatSimulation() {
     console.log("로딩 시작");
     setIsLoadingFinalResults(true);
 
+    // 전역 변수 초기화 (이전 요청의 내용이 남지 않도록)
+    window.finalResultsContent = "";
+    window.finalResultsMetadata = null;
+
     try {
       // sessionData 확인 및 디버깅
       console.log("Session Data:", sessionData);
