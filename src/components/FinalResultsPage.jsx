@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import "./FinalResultsPage.css";
@@ -7,41 +8,122 @@ function FinalResultsPage() {
   const location = useLocation();
   const professor = location.state?.professor;
   const applicantData = location.state?.applicantData;
+  const sessionId = location.state?.sessionId;
+  const finalResultsFromState = location.state?.finalResults; // 메타데이터
+  const initialReportContent = location.state?.reportContent || "";
+  const isStreaming = location.state?.isStreaming || false;
 
-  // Mock API response data
-  const mockFinalResults = {
-    session_id: 1,
-    applicant_id: 1,
-    professor_id: professor?.professor_id || "prof_001",
-    professor_name: professor?.professor_name || professor?.name || "박현규",
-    initial_score: professor?.total_score || professor?.matchingRate || 80,
-    chat_score: 0,
-    final_score: 80,
-    report:
-      "### 최종 매칭 리포트\n\n#### 요약\n본 리포트는 지원자 테스터와 박현규 교수의 매칭 적합도를 분석한 결과를 종합적으로 정리한 것입니다. 1차 적합도 분석에서 전체 적합도는 80점으로 평가되었으며, 채팅 기반 분석에서는 적합도가 0점으로 나타났습니다. 이러한 정보를 바탕으로 강점 및 개선점, 최종 추천 사항을 제시합니다.\n\n#### 상세 분석\n1. **1차 적합도 분석**\n   - **전체 적합도 (80점)**: 지원자는 박현규 교수와의 연구 주제 및 방법론에서 높은 적합성을 보였습니다.\n   - **연구 키워드 (74점)**: 기술 전략에 대한 관심이 있지만, 교수님의 연구 주제와의 부분적 괴리가 존재할 수 있습니다.\n   - **연구 방법론 (86점)**: 사례 기반 학습 성향은 교수님의 연구 방법론과 잘 맞아떨어져, 실질적인 연구 경험을 쌓을 수 있는 기회를 제공합니다.\n   - **커뮤니케이션 (84점)**: 지원자의 커뮤니케이션 능력은 교수님과의 협업에 긍정적인 영향을 미칠 것으로 예상됩니다.\n   - **학문 접근도 (77점)**: 지원자가 교수님의 접근 방식을 이해하고 적용할 수 있는 가능성이 있지만, 더 깊은 이해가 필요할 수 있습니다.\n   - **교수 선호도 (80점)**: 교수님이 지원자를 긍정적으로 평가할 가능성이 높습니다.\n\n2. **채팅 기반 분석**\n   - **채팅 적합도 (0점)**: 채팅 내역이 없음을 감안할 때, 지원자와 교수님 간의 초기 소통이 부족하다는 점은 큰 개선 요소로 작용할 수 있습니다.\n\n#### 결론\n테스터와 박현규 교수의 매칭은 전반적으로 긍정적인 평가를 받았습니다. 그러나 채팅 기반의 소통이 전혀 이루어지지 않은 점은 반드시 개선해야 할 부분입니다. 지원자는 교수님과의 초기 소통을 통해 연구 주제와 방향성을 더욱 명확히 하는 것이 필요합니다.\n\n**추천 사항:**\n1. 지원자는 박현규 교수와의 간단한 소통을 통해 연구 관심사 및 방법론에 대한 논의를 시작해야 합니다.\n2. 기술 전략 분야에 대한 구체적인 사례 자료를 준비하여 교수님과의 대화에서 활용할 것을 권장합니다.\n3. 교수님의 연구 주제에 대한 사전 조사 후, 지원자의 학문 접근 방식을 교수님과 비교하여 보다 심도 있는 논의를 하는 것이 필요합니다.\n\n이러한 조치를 통해 지원자가 박현규 교수와의 연구에서 더 큰 시너지를 창출할 수 있을 것으로 기대됩니다.",
-    chat_analysis: "채팅 내역이 없습니다.",
-    success: true,
-  };
+  // 리포트 스트리밍 상태
+  const [reportContent, setReportContent] = useState(() => {
+    if (initialReportContent) {
+      return initialReportContent;
+    }
+    // 전역 변수에 내용이 있으면 사용
+    if (window.finalResultsContent) {
+      return window.finalResultsContent;
+    }
+    return "";
+  });
+  const [finalScore, setFinalScore] = useState(() => {
+    // finalResultsFromState에서 final_score를 우선 사용
+    if (
+      finalResultsFromState?.final_score !== undefined &&
+      finalResultsFromState?.final_score !== null
+    ) {
+      return finalResultsFromState.final_score;
+    }
+    return null;
+  });
+  const [isLoadingReport, setIsLoadingReport] = useState(
+    !initialReportContent &&
+      !window.finalResultsContent &&
+      !!sessionId &&
+      isStreaming
+  );
+  const abortControllerRef = useRef(null);
+  const readerRef = useRef(null);
+  const hasInitializedRef = useRef(false);
 
-  // API 응답이 있으면 우선 사용, 없으면 mock 데이터 사용
-  const finalResults = location.state?.finalResults 
-    ? location.state.finalResults 
-    : mockFinalResults;
-  
-  // 디버깅: API 응답 확인
-  console.log("Final Results:", finalResults);
-  console.log("Report:", finalResults.report);
-  
-  // API 응답에서 교수님 정보 가져오기 (없으면 이전 페이지에서 전달받은 professor 사용)
-  const professorName = finalResults.professor_name || professor?.professor_name || professor?.name || "박현규";
+  // API 응답에서 교수님 정보 가져오기
+  const professorName =
+    finalResultsFromState?.professor_name ||
+    professor?.professor_name ||
+    professor?.name ||
+    "박현규";
   const professorMajor = professor?.major || "기술경영";
-  const researchAreas = professor?.researchAreas?.join("·") || "기술혁신·디지털전환";
-  
-  // 최종 매칭률은 final_score 사용
-  const finalMatchingRate = finalResults.final_score || finalResults.initial_score || 80;
-  
-  // 리포트 내용 (API 응답 우선 사용)
-  const reportContent = finalResults.report || "리포트 데이터가 없습니다.";
+  const researchAreas =
+    professor?.researchAreas?.join("·") || "기술혁신·디지털전환";
+
+  // 스트리밍 모드일 때 즉시 setter 등록 (렌더링 전에)
+  if (isStreaming && sessionId) {
+    window.finalResultsSetContent = (updater) => {
+      setReportContent((prev) => {
+        const newContent =
+          typeof updater === "function" ? updater(prev) : updater;
+        return newContent;
+      });
+    };
+  }
+
+  // SSE로 리포트 스트리밍 받기
+  useEffect(() => {
+    // 이미 초기화되었으면 다시 실행하지 않음
+    if (hasInitializedRef.current) {
+      return;
+    }
+
+    // 스트리밍 모드일 때
+    if (isStreaming && sessionId) {
+      hasInitializedRef.current = true;
+
+      // 첫 토큰은 이미 받았으므로 로딩 종료
+      setIsLoadingReport(false);
+
+      // window를 통해 setReportContent 등록 (이미 등록되어 있을 수 있음)
+      window.finalResultsSetContent = (updater) => {
+        setReportContent((prev) => {
+          const newContent =
+            typeof updater === "function" ? updater(prev) : updater;
+          return newContent;
+        });
+      };
+
+      // 전역 변수에 내용이 있으면 먼저 표시
+      if (window.finalResultsContent) {
+        console.log(
+          "FinalResultsPage - 전역 변수에서 내용 읽기:",
+          window.finalResultsContent.length
+        );
+        setReportContent(window.finalResultsContent);
+      }
+
+      // 주기적으로 전역 변수를 체크하여 업데이트
+      const intervalId = setInterval(() => {
+        if (window.finalResultsContent) {
+          setReportContent((prev) => {
+            const globalLength = window.finalResultsContent.length;
+            if (globalLength > prev.length) {
+              console.log(
+                "FinalResultsPage - 전역 변수 업데이트:",
+                globalLength
+              );
+              return window.finalResultsContent;
+            }
+            return prev;
+          });
+        }
+      }, 50); // 50ms마다 체크
+
+      // cleanup에서 제거
+      return () => {
+        clearInterval(intervalId);
+        delete window.finalResultsSetContent;
+      };
+    }
+
+    // 스트리밍이 아니거나 sessionId가 없으면 초기화 완료
+    hasInitializedRef.current = true;
+  }, [sessionId, isStreaming, initialReportContent]);
 
   const handleReSearch = () => {
     navigate("/results", {
@@ -57,7 +139,13 @@ function FinalResultsPage() {
       state: {
         professor: professor,
         applicantData: applicantData,
-        finalResults: finalResults,
+        finalResults: finalResultsFromState
+          ? {
+              ...finalResultsFromState,
+              report: reportContent,
+              final_score: finalScore,
+            }
+          : undefined,
       },
     });
     console.log("매칭 확정 및 상담 예약 페이지로 이동 예정");
@@ -89,7 +177,7 @@ function FinalResultsPage() {
             </div>
             <div className="card-header-right">
               <div className="initial-score-value">
-                {finalMatchingRate}%
+                {finalScore !== null ? `${finalScore}%` : "-"}
               </div>
               <div className="initial-score-label">최종 매칭률</div>
             </div>
@@ -98,7 +186,28 @@ function FinalResultsPage() {
           {/* Card Content */}
           <div className="card-content">
             <div className="report-content">
-              <ReactMarkdown>{reportContent}</ReactMarkdown>
+              {isLoadingReport ? (
+                <div style={{ textAlign: "center", padding: "2rem" }}>
+                  <div
+                    style={{
+                      display: "inline-block",
+                      width: "40px",
+                      height: "40px",
+                      border: "4px solid #e5e7eb",
+                      borderTopColor: "#32c3b0",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  ></div>
+                  <p style={{ marginTop: "1rem", color: "#6b7280" }}>
+                    리포트를 생성하는 중...
+                  </p>
+                </div>
+              ) : reportContent ? (
+                <ReactMarkdown>{reportContent}</ReactMarkdown>
+              ) : (
+                <p>리포트 데이터가 없습니다.</p>
+              )}
             </div>
           </div>
 

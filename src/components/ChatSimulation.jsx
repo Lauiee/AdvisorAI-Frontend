@@ -177,7 +177,6 @@ function ChatSimulation() {
       console.log("Session Data:", sessionData);
 
       // 쿼리 파라미터로 session_id 전달
-      // sessionData에서 session_id를 가져오거나, 응답 구조에 따라 다른 필드명 확인
       const sessionId =
         sessionData?.session_id ||
         sessionData?.id ||
@@ -187,11 +186,12 @@ function ChatSimulation() {
 
       const url = `${API_BASE_URL}/match/final?session_id=${sessionId}`;
 
-      // API 호출
+      // SSE API 호출
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "text/event-stream",
         },
       });
 
@@ -199,23 +199,145 @@ function ChatSimulation() {
         throw new Error(`API 요청 실패: ${response.status}`);
       }
 
-      const finalResults = await response.json();
-      console.log("API 응답 받음, 페이지 이동");
+      // ReadableStream으로 SSE 데이터 읽기
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let metadataReceived = false;
+      let firstContentTokenReceived = false;
+      let accumulatedReport = "";
+      let metadata = null;
 
-      // 로딩 화면이 표시되도록 약간의 딜레이 후 페이지 이동
-      setTimeout(() => {
-        navigate("/final-results", {
-          state: {
-            professor: professor,
-            applicantData: applicantData,
-            finalResults: finalResults, // API 응답 데이터
-          },
-        });
-      }, 100);
+      const readStream = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              console.log("SSE 스트림 종료");
+              // 스트림이 끝났는데도 첫 콘텐츠 토큰이 없으면 페이지 이동
+              if (!firstContentTokenReceived) {
+                navigate("/final-results", {
+                  state: {
+                    professor: professor,
+                    applicantData: applicantData,
+                    finalResults: metadata ? {
+                      ...metadata,
+                      report: accumulatedReport,
+                    } : undefined,
+                  },
+                });
+              }
+              break;
+            }
+
+            // 청크를 디코딩하고 버퍼에 추가
+            buffer += decoder.decode(value, { stream: true });
+
+            // SSE 형식 파싱 (data: 로 시작하는 라인)
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // 마지막 불완전한 라인은 버퍼에 보관
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6); // "data: " 제거
+
+                try {
+                  // JSON 파싱
+                  const parsed = JSON.parse(data);
+
+                  // done이 true이면 스트림 종료
+                  if (parsed.done === true) {
+                    console.log("SSE 스트림 완료");
+                    break;
+                  }
+
+                  // type에 따라 처리
+                  if (parsed.type === "metadata") {
+                    // 메타데이터 처리 (final_score 등)
+                    metadata = {
+                      initial_score: parsed.initial_score,
+                      chat_score: parsed.chat_score,
+                      final_score: parsed.final_score,
+                      professor_name: parsed.professor_name,
+                    };
+                    metadataReceived = true;
+                    console.log("메타데이터 받음:", metadata);
+                    continue;
+                  } else if (parsed.type === "content") {
+                    // 콘텐츠 처리 (리포트 내용)
+                    const content = parsed.content || "";
+
+                    if (content) {
+                      accumulatedReport += content;
+                      
+                      // 전역 변수에 항상 누적 (FinalResultsPage가 읽을 수 있도록)
+                      if (!window.finalResultsContent) {
+                        window.finalResultsContent = "";
+                      }
+                      window.finalResultsContent += content;
+
+                      // 메타데이터를 받았고 첫 콘텐츠 토큰이 오면 페이지 이동
+                      if (metadataReceived && !firstContentTokenReceived) {
+                        firstContentTokenReceived = true;
+                        
+                        // 메타데이터와 첫 콘텐츠 토큰을 받은 후 페이지 이동
+                        navigate("/final-results", {
+                          state: {
+                            professor: professor,
+                            applicantData: applicantData,
+                            sessionId: sessionId,
+                            reportContent: accumulatedReport,
+                            isStreaming: true,
+                            finalResults: metadata,
+                          },
+                        });
+                        // navigate 후에도 계속 읽기
+                        continue;
+                      }
+                      
+                      // 첫 토큰 이후의 토큰들은 window를 통해 전달
+                      if (window.finalResultsSetContent) {
+                        console.log("ChatSimulation - 토큰 전달:", content);
+                        window.finalResultsSetContent((prev) => {
+                          const newContent = (prev || "") + content;
+                          console.log("ChatSimulation - 업데이트된 내용 길이:", newContent.length);
+                          return newContent;
+                        });
+                      } else {
+                        console.log("ChatSimulation - setter 없음, 전역 변수에만 저장:", content, "총 길이:", window.finalResultsContent.length);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  console.error("SSE 데이터 파싱 오류:", e, "데이터:", data);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("SSE 스트림 읽기 오류:", error);
+          // 에러 발생 시에도 페이지 이동
+          navigate("/final-results", {
+            state: {
+              professor: professor,
+              applicantData: applicantData,
+              finalResults: metadata ? {
+                ...metadata,
+                report: accumulatedReport,
+              } : undefined,
+            },
+          });
+        } finally {
+          setIsLoadingFinalResults(false);
+        }
+      };
+
+      readStream();
     } catch (error) {
       console.error("최종 적합도 분석 API 오류:", error);
       setIsLoadingFinalResults(false);
-      // 에러가 발생해도 페이지 이동은 진행 (기존 동작 유지)
+      // 에러가 발생해도 페이지 이동은 진행
       navigate("/final-results", {
         state: {
           professor: professor,
