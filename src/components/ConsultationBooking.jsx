@@ -11,6 +11,7 @@ function ConsultationBooking() {
   const professor = location.state?.professor;
   const applicantData = location.state?.applicantData;
   const finalResults = location.state?.finalResults;
+  const apiResponse = location.state?.apiResponse; // 매칭 결과 API 응답
 
   // 교수 정보
   const professorName =
@@ -216,13 +217,16 @@ function ConsultationBooking() {
 
       // API 요청 본문 구성
       const requestBody = {
-        applicant_id: finalResults?.applicant_id || 0,
+        applicant_id:
+          apiResponse?.applicant_id || finalResults?.applicant_id || 0,
         professor_id: professor?.professor_id || "",
         session_id: finalResults?.session_id || 0,
         appointment_date: formattedDate,
         appointment_time: timeString,
         consultation_method: formData.consultationMethod,
       };
+
+      console.log("이메일 초안 요청 본문:", requestBody);
 
       // AbortController 생성
       const abortController = new AbortController();

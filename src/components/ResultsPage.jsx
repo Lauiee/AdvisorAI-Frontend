@@ -869,6 +869,7 @@ function ResultsPage() {
           applicantData: applicantData,
           sessionData: sessionResult, // API 응답 데이터
           professorsData: professorsData, // 교수님 목록 조회 데이터
+          apiResponse: apiResponse, // 매칭 결과 API 응답 (applicant_id 포함)
         },
       });
     } catch (error) {

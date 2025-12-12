@@ -12,6 +12,7 @@ function FinalResultsPage() {
   const finalResultsFromState = location.state?.finalResults; // 메타데이터
   const initialReportContent = location.state?.reportContent || "";
   const isStreaming = location.state?.isStreaming || false;
+  const apiResponse = location.state?.apiResponse; // 매칭 결과 API 응답
 
   // 리포트 스트리밍 상태
   const [reportContent, setReportContent] = useState(() => {
@@ -146,6 +147,7 @@ function FinalResultsPage() {
               final_score: finalScore,
             }
           : undefined,
+        apiResponse: location.state?.apiResponse, // 매칭 결과 API 응답도 전달
       },
     });
     console.log("매칭 확정 및 상담 예약 페이지로 이동 예정");

@@ -10,6 +10,7 @@ function ChatSimulation() {
   const applicantData = location.state?.applicantData;
   const professorsData = location.state?.professorsData;
   const sessionData = location.state?.sessionData;
+  const apiResponse = location.state?.apiResponse; // 매칭 결과 API 응답
 
   // 디버깅: 전달받은 데이터 확인
   console.log("ChatSimulation - Professor:", professor);
@@ -225,6 +226,7 @@ function ChatSimulation() {
                       ...metadata,
                       report: accumulatedReport,
                     } : undefined,
+                    apiResponse: apiResponse, // 매칭 결과 API 응답 전달
                   },
                 });
               }
@@ -290,6 +292,7 @@ function ChatSimulation() {
                             reportContent: accumulatedReport,
                             isStreaming: true,
                             finalResults: metadata,
+                            apiResponse: apiResponse, // 매칭 결과 API 응답 전달
                           },
                         });
                         // navigate 후에도 계속 읽기
@@ -326,6 +329,7 @@ function ChatSimulation() {
                 ...metadata,
                 report: accumulatedReport,
               } : undefined,
+              apiResponse: apiResponse, // 매칭 결과 API 응답 전달
             },
           });
         } finally {
@@ -342,6 +346,7 @@ function ChatSimulation() {
         state: {
           professor: professor,
           applicantData: applicantData,
+          apiResponse: apiResponse, // 매칭 결과 API 응답 전달
         },
       });
     }
