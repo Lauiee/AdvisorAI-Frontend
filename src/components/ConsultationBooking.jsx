@@ -42,6 +42,8 @@ function ConsultationBooking() {
   const [toastMessage, setToastMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const abortControllerRef = useRef(null);
+  const readerRef = useRef(null);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -141,6 +143,24 @@ function ConsultationBooking() {
     }
   }, [showToast]);
 
+  // 컴포넌트 언마운트 시 SSE 연결 정리
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      if (readerRef.current) {
+        try {
+          readerRef.current.cancel();
+        } catch (e) {
+          // 이미 해제된 경우 무시
+        }
+        readerRef.current = null;
+      }
+    };
+  }, []);
+
   const handleAdvisorAIDraft = async () => {
     // 날짜와 시간 선택 확인
     if (!formData.date || !formData.time) {
@@ -153,15 +173,46 @@ function ConsultationBooking() {
       return;
     }
 
+    // 기존 연결이 있으면 종료
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (readerRef.current) {
+      try {
+        readerRef.current.cancel();
+      } catch (e) {
+        // 이미 해제된 경우 무시
+      }
+      readerRef.current = null;
+    }
+
     // API Base URL
     const API_BASE_URL = "https://api.advisor-ai.net";
 
     setIsLoadingDraft(true);
 
+    // 초기 상태로 초기화
+    setFormData((prev) => ({
+      ...prev,
+      memo: "",
+    }));
+    setEmailPreview((prev) => ({
+      ...prev,
+      body: "",
+    }));
+
     try {
       // 날짜 형식 변환 (YYYY-MM-DD)
       const selectedDate = formData.date;
       const formattedDate = selectedDate.toISOString().split("T")[0];
+
+      // 시간 형식 변환 (HH:mm)
+      const timeString = formData.time
+        ? `${String(formData.time.getHours()).padStart(2, "0")}:${String(
+            formData.time.getMinutes()
+          ).padStart(2, "0")}`
+        : "";
 
       // API 요청 본문 구성
       const requestBody = {
@@ -169,85 +220,140 @@ function ConsultationBooking() {
         professor_id: professor?.professor_id || "",
         session_id: finalResults?.session_id || 0,
         appointment_date: formattedDate,
-        appointment_time: formData.time,
+        appointment_time: timeString,
         consultation_method: formData.consultationMethod,
       };
 
-      // API 호출
+      // AbortController 생성
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      // SSE API 호출
       const response = await fetch(`${API_BASE_URL}/email/draft`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "text/event-stream",
         },
         body: JSON.stringify(requestBody),
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
         throw new Error(`API 요청 실패: ${response.status}`);
       }
 
-      const draftResult = await response.json();
+      // ReadableStream으로 SSE 데이터 읽기
+      const reader = response.body.getReader();
+      readerRef.current = reader;
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let firstTokenReceived = false;
 
-      // 응답에서 email_draft 가져와서 초안으로 설정
-      if (draftResult.email_draft) {
-        // 마크다운 문법 제거 (이메일은 마크다운이 아니므로)
-        const cleanDraft = draftResult.email_draft
-          .replace(/\*\*([^*]+)\*\*/g, "$1") // **텍스트** -> 텍스트
-          .replace(/\*([^*]+)\*/g, "$1") // *텍스트* -> 텍스트
-          .replace(/#{1,6}\s+/g, "") // # 제목 -> 제목
-          .trim();
+      const readStream = async () => {
+        try {
+          while (true) {
+            // AbortController로 취소되었는지 확인
+            if (abortController.signal.aborted) {
+              console.log("SSE 스트림 취소됨");
+              break;
+            }
 
-        setFormData((prev) => ({
-          ...prev,
-          memo: cleanDraft,
-        }));
-        setEmailPreview((prev) => ({
-          ...prev,
-          body: cleanDraft,
-        }));
-        showToastMessage("메일 초안 작성이 완료되었습니다.");
-      } else {
-        throw new Error("이메일 초안을 받을 수 없습니다.");
-      }
+            const { done, value } = await reader.read();
+
+            if (done) {
+              console.log("SSE 스트림 종료");
+              break;
+            }
+
+            // 청크를 디코딩하고 버퍼에 추가
+            buffer += decoder.decode(value, { stream: true });
+
+            // SSE 형식 파싱 (data: 로 시작하는 라인)
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // 마지막 불완전한 라인은 버퍼에 보관
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6); // "data: " 제거
+
+                try {
+                  // JSON 파싱
+                  const parsed = JSON.parse(data);
+
+                  // done이 true이면 스트림 종료
+                  if (parsed.done === true) {
+                    console.log("SSE 스트림 완료");
+                    break;
+                  }
+
+                  // content 필드에서 텍스트 가져오기
+                  const content = parsed.content || "";
+
+                  if (content) {
+                    // 첫 토큰이 오면 로딩 종료
+                    if (!firstTokenReceived) {
+                      firstTokenReceived = true;
+                      setIsLoadingDraft(false);
+                    }
+
+                    // 토큰이 올 때마다 바로바로 추가하여 업데이트
+                    setFormData((prev) => ({
+                      ...prev,
+                      memo: (prev.memo || "") + content,
+                    }));
+                    setEmailPreview((prev) => ({
+                      ...prev,
+                      body: (prev.body || "") + content,
+                    }));
+                  }
+                } catch (e) {
+                  console.error("SSE 데이터 파싱 오류:", e, "데이터:", data);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          if (error.name === "AbortError") {
+            console.log("SSE 스트림이 취소되었습니다");
+          } else {
+            console.error("SSE 스트림 읽기 오류:", error);
+            showToastMessage(
+              "이메일 초안 작성 중 오류가 발생했습니다. 다시 시도해주세요."
+            );
+          }
+        } finally {
+          try {
+            reader.releaseLock();
+          } catch (e) {
+            // 이미 해제된 경우 무시
+          }
+          readerRef.current = null;
+          abortControllerRef.current = null;
+          setIsLoadingDraft(false);
+
+          // 스트림이 완료되면 완료 메시지 표시
+          setFormData((prev) => {
+            if (prev.memo) {
+              showToastMessage("메일 초안 작성이 완료되었습니다.");
+            }
+            return prev;
+          });
+        }
+      };
+
+      readStream();
     } catch (error) {
-      console.error("이메일 초안 작성 API 오류:", error);
-      showToastMessage(
-        "이메일 초안 작성 중 오류가 발생했습니다. 다시 시도해주세요."
-      );
-    } finally {
+      if (error.name === "AbortError") {
+        console.log("이메일 초안 요청이 취소되었습니다");
+      } else {
+        console.error("이메일 초안 작성 API 오류:", error);
+        showToastMessage(
+          "이메일 초안 작성 중 오류가 발생했습니다. 다시 시도해주세요."
+        );
+      }
       setIsLoadingDraft(false);
     }
-    const draftEmail = `제목: [기술경영전문대학원 지원 희망] ${professorName} 교수님께 상담 요청 드립니다
-
-${professorName} 교수님께,
-
-안녕하십니까. 저는 이번 기술경영전문대학원(MOT) 진학을 희망하는 지원생 ${applicantName}입니다. 바쁘신 와중에 귀한 시간을 내어 이메일을 읽어주셔서 진심으로 감사드립니다.
-
-교수님의 연구 분야에 깊은 관심을 가지고 자료를 탐색하던 중, 'Advisor.AI' 서비스를 통해 교수님의 연구 분야와 제가 희망하는 연구 관심사가 매우 높은 적합도(${
-      professor?.total_score || professor?.matchingRate || 80
-    }%)를 보인다는 리포트를 확인하고 조심스럽게 연락드리게 되었습니다.
-
-교수님과의 상담을 통해 연구 방향성에 대해 더 깊이 논의하고 싶습니다. 가능하시다면 ${
-      formData.date ? formatDate(formData.date) : "날짜"
-    } ${formData.time ? formatTime(formData.time) : "시간"}에 ${
-      formData.consultationMethod || "대면"
-    } 상담을 진행하고 싶습니다.
-
-감사합니다.
-${applicantName} 드림`;
-
-    setFormData((prev) => ({
-      ...prev,
-      memo: draftEmail,
-    }));
-
-    setEmailPreview({
-      subject: `[상담 요청] Advisor.AI 매칭 결과 - ${applicantName}`,
-      body: draftEmail,
-    });
-
-    // 초안 작성 완료 토스트 표시
-    showToastMessage("메일 초안 작성이 완료되었습니다.");
   };
 
   const handleSendEmail = () => {
