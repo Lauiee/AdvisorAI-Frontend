@@ -200,6 +200,104 @@ const mockProfessors = [
     ],
     rationale:
       "우한균 교수와의 매칭은 AI 및 디지털 전환 분야에서 높은 적합도를 보입니다.",
+    papers: [
+      {
+        year: 2022,
+        papers: [
+          {
+            title:
+              "Capturing research trends in structural health monitoring using bibliometric analysis",
+            journal: "SMART STRUCTURES AND SYSTEMS",
+          },
+        ],
+      },
+      {
+        year: 2021,
+        papers: [
+          {
+            title:
+              "Screening ideas in the early stages of technology development: A word2vec and convolutional neural network approach",
+            journal: "TECHNOVATION",
+          },
+          {
+            title: "음성 센서를 활용한 팀 의사결정 과정에서 팀원의 영향력 연구",
+            journal: "생산성논집",
+          },
+        ],
+      },
+      {
+        year: 2020,
+        papers: [
+          {
+            title:
+              "A study of battery operational optimization with data-driven clustering",
+            journal: "한국마린엔지니어링 학회지",
+          },
+        ],
+      },
+      {
+        year: 2019,
+        papers: [
+          {
+            title:
+              "Screening early stage ideas in technology development processes: a text mining and k-nearest neighbours approach using patent information",
+            journal: "TECHNOLOGY ANALYSIS & STRATEGIC MANAGEMENT",
+          },
+        ],
+      },
+      {
+        year: 2017,
+        papers: [
+          {
+            title:
+              "The transformation of ownership structure and changes in principal-principal conflicts: evidence from corporate governance reforms in South Korea",
+            journal: "INTERNATIONAL JOURNAL OF CORPORATE GOVERNANCE",
+          },
+          {
+            title: "Hawkes process-based technology impact analysis",
+            journal: "JOURNAL OF INFORMETRICS",
+          },
+          {
+            title:
+              "Pro-innovation culture, ambidexterity and new product development performance: Polynomial regression and response surface analysis",
+            journal: "EUROPEAN MANAGEMENT JOURNAL",
+          },
+          {
+            title:
+              "Patterns of technology life cycles: stochastic analysis based on patent citations",
+            journal: "TECHNOLOGY ANALYSIS & STRATEGIC MANAGEMENT",
+          },
+        ],
+      },
+      {
+        year: 2016,
+        papers: [
+          {
+            title:
+              "Stochastic technology life cycle analysis using multiple patent indicators",
+            journal: "TECHNOLOGICAL FORECASTING AND SOCIAL CHANGE",
+          },
+        ],
+      },
+      {
+        year: 2012,
+        papers: [
+          {
+            title: "The role of absorptive capacity in partnership retention",
+            journal: "ASIAN JOURNAL OF TECHNOLOGY INNOVATION",
+          },
+        ],
+      },
+      {
+        year: 2004,
+        papers: [
+          {
+            title: "Finding reusable UML sequence diagrams automatically",
+            journal: "IEEE SOFTWARE",
+          },
+        ],
+      },
+    ],
   },
   {
     professor_id: "prof_003",
@@ -240,6 +338,48 @@ const mockProfessors = [
     ],
     rationale:
       "박진혁 교수는 R&D 전략과 특허 데이터 분석에 특화되어 있어 기술 전략 연구에 적합합니다.",
+    papers: [
+      {
+        year: 2022,
+        papers: [
+          {
+            title:
+              "Patent protection and Foreign R&D Investment Location Choices: inventor mobility and policy convergence",
+            journal: "Industrial and Corporate Change",
+          },
+        ],
+      },
+      {
+        year: 2021,
+        papers: [
+          {
+            title:
+              "Do R&D Investments in Weak IPR Countries Destroy Market Value? The Role of Internal Linkages",
+            journal: "Strategic Management Journal",
+          },
+        ],
+      },
+      {
+        year: 2020,
+        papers: [
+          {
+            title:
+              "한, 중, 일 기업의 해외직접투자 동향 비교분석: 투자처결정요인과 정책적 함의",
+            journal: "비교경제연구",
+          },
+        ],
+      },
+      {
+        year: 2015,
+        papers: [
+          {
+            title:
+              "Do latecomer firms rely on 'recent' and 'scientific' knowledge more than incumbent firms do? Convergence or divergence in knowledge sourcing",
+            journal: "Asian Journal of Technology Innovation",
+          },
+        ],
+      },
+    ],
   },
   {
     professor_id: "prof_004",
